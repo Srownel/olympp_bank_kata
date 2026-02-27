@@ -3,7 +3,7 @@ A basic "fake bank" project based on Olympp's KATA.
 
 Project includes a docker config for convenience. Deploy using "docker compose up --build" at the root.
 
--------------------
+----------------------------------------------
 
 Backend : Java 25 + Spring  
 Frontend : Angular 17

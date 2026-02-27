@@ -16,6 +16,9 @@ import com.example.kata.account.repository.TransactionRepository;
 import com.example.kata.account.DTO.AccountResponse;
 import com.example.kata.account.DTO.StatementResponse;
 import com.example.kata.account.DTO.TransactionResponse;
+import com.example.kata.account.exception.AccountNotFoundException;
+import com.example.kata.account.exception.InsufficientFundsException;
+import com.example.kata.account.exception.InvalidAmountException;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -33,7 +36,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional(readOnly = true)
     public AccountResponse getAccountInfo(long accountId) {
-        Account account = accountRepo.findById(accountId).orElseThrow(() -> new RuntimeException("Account not found"));
+        Account account = accountRepo.findById(accountId).orElseThrow(() -> new AccountNotFoundException(accountId));
 
         AccountResponse response = new AccountResponse(
             account.getAccountId(), 
@@ -47,9 +50,13 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public TransactionResponse deposit(long accountId, BigDecimal amount) {
-        // TODO check for validity of input data. Maybe todo in the Controller.
+        // Check data validity
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidAmountException("Deposited amount must be positive (amount was " + amount + ")");
+        }
 
-        Account account = accountRepo.findById(accountId).orElseThrow(() -> new RuntimeException("Account not found"));
+
+        Account account = accountRepo.findById(accountId).orElseThrow(() -> new AccountNotFoundException(accountId));
 
         // Build new transaction
         Transaction newTransaction = new Transaction(
@@ -79,14 +86,17 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public TransactionResponse withdraw(long accountId, BigDecimal amount) {
-        // TODO check for validity of input data. Maybe todo in the Controller.
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidAmountException("Withdrawn amount must be positive (amount was " + amount + ")");
+        }
 
-        Account account = accountRepo.findById(accountId).orElseThrow(() -> new RuntimeException("Account not found"));
+
+        Account account = accountRepo.findById(accountId).orElseThrow(() -> new AccountNotFoundException(accountId));
 
         // Check for available balance
         if (account.getBalance().subtract(amount).compareTo(
             BigDecimal.valueOf(-account.getAllowedNegativeBalance())) < 0) {
-            throw new RuntimeException("TODO, proper exception handling");
+            throw new InsufficientFundsException(account.getBalance().subtract(amount));
         }
 
         // Build new transaction
@@ -117,7 +127,7 @@ public class AccountServiceImpl implements AccountService {
     @Transactional(readOnly = true)
     public StatementResponse getFullAccountStatement(long accountId) {
 
-        Account account = accountRepo.findById(accountId).orElseThrow(() -> new RuntimeException("Account not found"));
+        Account account = accountRepo.findById(accountId).orElseThrow(() -> new AccountNotFoundException(accountId));
         List<Transaction> transactions = transactionRepo.findAllTransactionsForAccount(accountId);
 
         List<TransactionResponse> transactionResponses = transactions.stream()

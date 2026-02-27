@@ -1,0 +1,85 @@
+<div class="container">
+  <h1>Welcome to Your Bank Account</h1>
+  
+  <!-- Account Information -->
+  <div class="account-info" *ngIf="!loading && account">
+    <h2>Account Holder: {{ account.fullName }}</h2>
+    <div class="balance" [class.negative]="isBalanceNegative">
+      Balance: ${{ formatAmount(account.balance) }}
+    </div>
+    
+    <div class="warning" *ngIf="isBalanceNegative">
+      ⚠️ Your balance is negative. Maximum allowed overdraft: ${{ formatAmount(account.allowedNegativeBalance) }}
+    </div>
+  </div>
+
+  <div class="account-info" *ngIf="loading">
+    <div class="loading">Loading account information...</div>
+  </div>
+
+  <!-- Message Area -->
+  <div class="success" *ngIf="successMessage">
+    ✓ {{ successMessage }}
+  </div>
+
+  <div class="error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Transaction Forms -->
+  <div class="transaction-forms">
+    <div class="form-group">
+      <h3>Deposit</h3>
+      <input 
+        type="number" 
+        [(ngModel)]="depositAmount" 
+        placeholder="Enter amount" 
+        step="0.01" 
+        min="0.01"
+        (keyup.enter)="onDeposit()"
+      >
+      <button class="deposit-btn" (click)="onDeposit()">Make Deposit</button>
+    </div>
+
+    <div class="form-group">
+      <h3>Withdraw</h3>
+      <input 
+        type="number" 
+        [(ngModel)]="withdrawAmount" 
+        placeholder="Enter amount" 
+        step="0.01" 
+        min="0.01"
+        (keyup.enter)="onWithdraw()"
+      >
+      <button class="withdraw-btn" (click)="onWithdraw()">Make Withdrawal</button>
+    </div>
+  </div>
+
+  <button class="statement-btn" (click)="toggleStatement()">
+    {{ statementVisible ? 'Hide' : 'View' }} Transaction History
+  </button>
+
+  <!-- Statement Section -->
+  <div class="statement-section" *ngIf="statementVisible">
+    <h2>Transaction History</h2>
+    
+    <div class="loading" *ngIf="statementLoading">Loading transactions...</div>
+
+    <div *ngIf="!statementLoading && statement">
+      <div class="transaction-list" *ngIf="statement.transactions.length > 0">
+        <div class="transaction-item" *ngFor="let transaction of statement.transactions">
+          <span class="transaction-type" [class]="transaction.type">
+            {{ transaction.type }}
+          </span>
+          <span>{{ formatDate(transaction.timestamp) }}</span>
+          <span class="transaction-amount">${{ formatAmount(transaction.amount) }}</span>
+          <span class="transaction-balance">Balance: ${{ formatAmount(transaction.balanceAfter) }}</span>
+        </div>
+      </div>
+
+      <div class="loading" *ngIf="statement.transactions.length === 0">
+        No transactions found
+      </div>
+    </div>
+  </div>
+</div>

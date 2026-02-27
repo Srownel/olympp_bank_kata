@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Demo App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .account-info {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .balance {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c5f2d;
+            margin: 10px 0;
+        }
+
+        .balance.negative {
+            color: #c62828;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .transaction-forms {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .form-group {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        .form-group h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .deposit-btn {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .deposit-btn:hover {
+            background-color: #45a049;
+        }
+
+        .withdraw-btn {
+            background-color: #2196f3;
+            color: white;
+        }
+
+        .withdraw-btn:hover {
+            background-color: #0b7dda;
+        }
+
+        .statement-btn {
+            background-color: #757575;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .statement-btn:hover {
+            background-color: #616161;
+        }
+
+        .statement-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .statement-section.visible {
+            display: block;
+        }
+
+        .statement-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .transaction-list {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .transaction-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-item:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .transaction-type {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+
+        .transaction-type.DEPOSIT {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .transaction-type.WITHDRAWAL {
+            background-color: #bbdefb;
+            color: #1565c0;
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+        }
+
+        .transaction-balance {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .transaction-forms {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Your Bank Account</h1>
+        
+        <div id="accountInfo" class="account-info">
+            <div class="loading">Loading account information...</div>
+        </div>
+
+        <div id="messageArea"></div>
+
+        <div class="transaction-forms">
+            <div class="form-group">
+                <h3>Deposit</h3>
+                <input type="number" id="depositAmount" placeholder="Enter amount" step="0.01" min="0.01">
+                <button class="deposit-btn" onclick="handleDeposit()">Make Deposit</button>
+            </div>
+
+            <div class="form-group">
+                <h3>Withdraw</h3>
+                <input type="number" id="withdrawAmount" placeholder="Enter amount" step="0.01" min="0.01">
+                <button class="withdraw-btn" onclick="handleWithdraw()">Make Withdrawal</button>
+            </div>
+        </div>
+
+        <button class="statement-btn" onclick="toggleStatement()">View Transaction History</button>
+
+        <div id="statementSection" class="statement-section">
+            <h2>Transaction History</h2>
+            <div id="transactionList">
+                <div class="loading">Loading transactions...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api/account';
+        const ACCOUNT_ID = 1;
+
+        let statementVisible = false;
+
+        // Load account info on page load
+        window.onload = function() {
+            loadAccountInfo();
+        };
+
+        async function loadAccountInfo() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/${ACCOUNT_ID}`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load account information');
+                }
+
+                const account = await response.json();
+                displayAccountInfo(account);
+            } catch (error) {
+                displayError('Failed to load account information. Please check if the backend is running.');
+                console.error('Error loading account:', error);
+            }
+        }
+
+        function displayAccountInfo(account) {
+            const infoDiv = document.getElementById('accountInfo');
+            const isNegative = account.balance < 0;
+            
+            let html = `
+                <h2>Account Holder: ${account.fullName}</h2>
+                <div class="balance ${isNegative ? 'negative' : ''}">
+                    Balance: $${formatAmount(account.balance)}
+                </div>
+            `;
+
+            if (isNegative) {
+                html += `
+                    <div class="warning">
+                        ⚠️ Your balance is negative. Maximum allowed overdraft: $${formatAmount(account.allowedNegativeBalance)}
+                    </div>
+                `;
+            }
+
+            infoDiv.innerHTML = html;
+        }
+
+        async function handleDeposit() {
+            const amount = document.getElementById('depositAmount').value;
+            
+            if (!amount || parseFloat(amount) <= 0) {
+                displayError('Please enter a valid amount greater than 0');
+                return;
+            }
+
+            await performTransaction('deposit', amount);
+            document.getElementById('depositAmount').value = '';
+        }
+
+        async function handleWithdraw() {
+            const amount = document.getElementById('withdrawAmount').value;
+            
+            if (!amount || parseFloat(amount) <= 0) {
+                displayError('Please enter a valid amount greater than 0');
+                return;
+            }
+
+            await performTransaction('withdraw', amount);
+            document.getElementById('withdrawAmount').value = '';
+        }
+
+        async function performTransaction(type, amount) {
+            clearMessages();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/${ACCOUNT_ID}/${type}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ amount: parseFloat(amount) })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    handleErrorResponse(data);
+                    return;
+                }
+
+                displaySuccess(`Transaction successful! New balance: $${formatAmount(data.balanceAfter)}`);
+                loadAccountInfo();
+                
+                // Refresh statement if it's visible
+                if (statementVisible) {
+                    loadStatement();
+                }
+            } catch (error) {
+                displayError('Transaction failed. Please try again.');
+                console.error('Transaction error:', error);
+            }
+        }
+
+        async function toggleStatement() {
+            const section = document.getElementById('statementSection');
+            statementVisible = !statementVisible;
+
+            if (statementVisible) {
+                section.classList.add('visible');
+                await loadStatement();
+            } else {
+                section.classList.remove('visible');
+            }
+        }
+
+        async function loadStatement() {
+            const listDiv = document.getElementById('transactionList');
+            listDiv.innerHTML = '<div class="loading">Loading transactions...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/${ACCOUNT_ID}/statement`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load statement');
+                }
+
+                const statement = await response.json();
+                displayStatement(statement);
+            } catch (error) {
+                listDiv.innerHTML = '<div class="error">Failed to load transaction history</div>';
+                console.error('Error loading statement:', error);
+            }
+        }
+
+        function displayStatement(statement) {
+            const listDiv = document.getElementById('transactionList');
+            
+            if (!statement.transactions || statement.transactions.length === 0) {
+                listDiv.innerHTML = '<div class="loading">No transactions found</div>';
+                return;
+            }
+
+            let html = '<div class="transaction-list">';
+            
+            statement.transactions.forEach(transaction => {
+                const date = new Date(transaction.timestamp).toLocaleString();
+                html += `
+                    <div class="transaction-item">
+                        <span class="transaction-type ${transaction.type}">${transaction.type}</span>
+                        <span>${date}</span>
+                        <span class="transaction-amount">$${formatAmount(transaction.amount)}</span>
+                        <span class="transaction-balance">Balance: $${formatAmount(transaction.balanceAfter)}</span>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            listDiv.innerHTML = html;
+        }
+
+        function handleErrorResponse(errorData) {
+            let message = errorData.message || 'An error occurred';
+            
+            switch (errorData.error) {
+                case 'INSUFFICIENT_FUNDS':
+                    message = '❌ ' + message;
+                    break;
+                case 'INVALID_AMOUNT':
+                    message = '❌ ' + message;
+                    break;
+                case 'ACCOUNT_NOT_FOUND':
+                    message = '❌ Account not found';
+                    break;
+                default:
+                    message = '❌ ' + message;
+            }
+
+            displayError(message);
+        }
+
+        function displayError(message) {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = `<div class="error">${message}</div>`;
+            setTimeout(clearMessages, 5000);
+        }
+
+        function displaySuccess(message) {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = `<div class="success">✓ ${message}</div>`;
+            setTimeout(clearMessages, 5000);
+        }
+
+        function clearMessages() {
+            document.getElementById('messageArea').innerHTML = '';
+        }
+
+        function formatAmount(amount) {
+            return parseFloat(amount).toFixed(2);
+        }
+    </script>
+</body>
+</html>

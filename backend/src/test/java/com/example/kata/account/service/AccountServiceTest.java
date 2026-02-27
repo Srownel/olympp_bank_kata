@@ -21,6 +21,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.example.kata.account.DTO.AccountResponse;
 import com.example.kata.account.DTO.StatementResponse;
 import com.example.kata.account.DTO.TransactionResponse;
+import com.example.kata.account.exception.AccountNotFoundException;
+import com.example.kata.account.exception.InsufficientFundsException;
+import com.example.kata.account.exception.InvalidAmountException;
 import com.example.kata.account.model.Account;
 import com.example.kata.account.model.Transaction;
 import com.example.kata.account.model.TransactionType;
@@ -75,7 +78,7 @@ class AccountServiceTest {
     void getNonExistingAccountInfo() {
         when(accountRepository.findById(TEST_ACCOUNT_ID)).thenReturn(Optional.empty());
 
-        assertThrows(Exception.class, () -> {
+        assertThrows(AccountNotFoundException.class, () -> {
             accountService.getAccountInfo(TEST_ACCOUNT_ID);
         }, "Should throw exception when account not found");
 
@@ -108,7 +111,7 @@ class AccountServiceTest {
     void depositWithNegativeAmount_throwsException() {
         BigDecimal negativeAmount = BigDecimal.valueOf(-50.00);
 
-        assertThrows(Exception.class, () -> {
+        assertThrows(InvalidAmountException.class, () -> {
             accountService.deposit(TEST_ACCOUNT_ID, negativeAmount);
         }, "Should throw exception for negative deposit amount");
         
@@ -120,7 +123,7 @@ class AccountServiceTest {
     void depositWithZeroAmount_throwsException() {
         BigDecimal zeroAmount = BigDecimal.ZERO;
 
-        assertThrows(Exception.class, () -> {
+        assertThrows(InvalidAmountException.class, () -> {
             accountService.deposit(TEST_ACCOUNT_ID, zeroAmount);
         }, "Should throw exception for zero deposit amount");
 
@@ -170,8 +173,9 @@ class AccountServiceTest {
         // Aaccount with 500, withdraw 1501 -> would go to -1001 (exceeds -1000 limit)
         BigDecimal withdrawAmount = BigDecimal.valueOf(1501.00);
 
+        when(accountRepository.findById(TEST_ACCOUNT_ID)).thenReturn(Optional.of(testAccount));
 
-        assertThrows(Exception.class, () -> {
+        assertThrows(InsufficientFundsException.class, () -> {
             accountService.withdraw(TEST_ACCOUNT_ID, withdrawAmount);
         }, "Should throw exception when exceeding limit");
 
@@ -186,7 +190,7 @@ class AccountServiceTest {
         BigDecimal negativeAmount = BigDecimal.valueOf(-100.00);
 
 
-        assertThrows(Exception.class, () -> {
+        assertThrows(InvalidAmountException.class, () -> {
             accountService.withdraw(TEST_ACCOUNT_ID, negativeAmount);
         }, "Should throw exception for negative withdrawal amount");
 
@@ -200,7 +204,7 @@ class AccountServiceTest {
         BigDecimal zeroAmount = BigDecimal.ZERO;
 
 
-        assertThrows(Exception.class, () -> {
+        assertThrows(InvalidAmountException.class, () -> {
             accountService.withdraw(TEST_ACCOUNT_ID, zeroAmount);
         }, "Should throw exception for zero withdrawal amount");
         

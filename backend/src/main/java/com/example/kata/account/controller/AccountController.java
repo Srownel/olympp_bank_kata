@@ -1,6 +1,5 @@
 package com.example.kata.account.controller;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,6 +8,8 @@ import com.example.kata.account.DTO.StatementResponse;
 import com.example.kata.account.DTO.TransactionRequest;
 import com.example.kata.account.DTO.TransactionResponse;
 import com.example.kata.account.service.AccountService;
+
+// Note: Exception management is auto-caught and managed in exception/GlobalExceptionHandler.java
 
 @RestController
 @RequestMapping("/api/account")
@@ -37,14 +38,9 @@ public class AccountController {
 
     @PostMapping("/{accountId}/withdraw")
     public ResponseEntity<TransactionResponse> withdraw(@PathVariable long accountId, @RequestBody TransactionRequest request) {
-        // TODO proper error handling
-        try {
-            TransactionResponse transationResponse = accountService.withdraw(accountId, request.getAmount());
+        TransactionResponse transationResponse = accountService.withdraw(accountId, request.getAmount());
 
-            return ResponseEntity.ok(transationResponse);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // terribly temporary
-        }
+        return ResponseEntity.ok(transationResponse);
     }
 
     @GetMapping("/{accountId}/statement")

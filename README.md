@@ -48,7 +48,8 @@ Robust Logger system for error monitoring
 Authentication and security  
 Validate input data through @Valid  
 Generate an API doc through springdoc-openapi  
-Proper database  
+Proper database (not in-memory H2)  
 CI/CD  
 Reconquer Constantinople and restore the empire for the glory of Rome.  
+Maybe make the Transaction class more "Immutable" somehow. It would make some sense functionally speaking.  
 Other...

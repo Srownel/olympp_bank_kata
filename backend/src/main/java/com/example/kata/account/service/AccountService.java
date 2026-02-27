@@ -14,7 +14,7 @@ public interface AccountService {
     TransactionResponse deposit(long accountId, BigDecimal amount);
 
     // Basic withdrawal transaction
-    TransactionResponse withdraw(long accountId, BigDecimal amount) throws Exception;
+    TransactionResponse withdraw(long accountId, BigDecimal amount);
 
     // For a full history of all transactions of an account.
     StatementResponse getFullAccountStatement(long accountId);

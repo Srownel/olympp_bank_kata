@@ -40,9 +40,9 @@ public class AccountController {
         // TODO proper error handling
         try {
             TransactionResponse transationResponse = accountService.withdraw(accountId, request.getAmount());
-            
+
             return ResponseEntity.ok(transationResponse);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // terribly temporary
         }
     }

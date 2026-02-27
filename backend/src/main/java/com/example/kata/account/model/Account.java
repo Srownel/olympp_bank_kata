@@ -49,6 +49,10 @@ public class Account {
         return allowedNegativeBalance;
     }
 
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
+
 
     //* SETTERS *//
 
